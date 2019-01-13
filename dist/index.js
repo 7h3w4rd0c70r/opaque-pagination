@@ -39,6 +39,21 @@ var Cursor = (function () {
         }
         return this._skip;
     };
+    Cursor.prototype.sort = function (sort) {
+        if (sort !== null && typeof sort === 'object') {
+            this._sort = Object.assign({}, sort);
+            return this;
+        }
+        return Object.assign({}, this._sort);
+    };
+    Cursor.prototype.withSort = function (sortKey, sortDirection) {
+        this._sort[sortKey] = sortDirection;
+        return this;
+    };
+    Cursor.prototype.withoutSort = function (sortKey) {
+        delete this._sort[sortKey];
+        return this;
+    };
     Cursor.prototype.previous = function () {
         var limit = this.limit();
         var skip = this.skip() - this.limit();

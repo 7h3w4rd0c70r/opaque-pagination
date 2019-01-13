@@ -2,6 +2,7 @@
 export interface CursorConfig {
     limit?: number
     skip?: number
+    sort?: { [key: string]: 'asc'|'desc' }
 }
 
 declare module 'opaque-pagination' {
@@ -15,6 +16,12 @@ declare module 'opaque-pagination' {
 
         public skip(): number
         public skip(skip: number): Cursor
+
+        public sort(): { [key: string]: 'asc'|'desc' }
+        public sort(sort: { [key: string]: 'asc'|'desc' }): Cursor
+
+        public withSort(sortKey: string, sortDirection: 'asc'|'desc'): Cursor
+        public withoutSort(sortKey: string): Cursor
 
         public previous(): Cursor
         public next(): Cursor

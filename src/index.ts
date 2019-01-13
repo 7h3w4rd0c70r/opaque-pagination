@@ -49,6 +49,27 @@ export class Cursor {
         return this._skip
     }
 
+    private _sort: { [key: string]: 'asc'|'desc' }
+    public sort(): { [key: string]: 'asc'|'desc' }
+    public sort(sort: { [key: string]: 'asc'|'desc' }): Cursor
+    public sort(sort?: { [key: string]: 'asc'|'desc' }): Cursor|{ [key: string]: 'asc'|'desc' } {
+        if (sort !== null && typeof sort === 'object') {
+            this._sort = Object.assign({}, sort)
+            return this
+        }
+        return Object.assign({}, this._sort)
+    }
+
+    public withSort(sortKey: string, sortDirection: 'asc'|'desc'): Cursor {
+        this._sort[sortKey] = sortDirection
+        return this
+    }
+
+    public withoutSort(sortKey: string): Cursor {
+        delete this._sort[sortKey]
+        return this
+    }
+
     public previous(): Cursor {
         const limit = this.limit()
         let skip = this.skip() - this.limit()
