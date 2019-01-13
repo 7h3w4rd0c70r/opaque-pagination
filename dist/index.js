@@ -25,55 +25,38 @@ var Cursor = (function () {
         }
         return new Cursor({ limit: limit, skip: skip });
     };
-    Object.defineProperty(Cursor.prototype, "limit", {
-        get: function () { return this._limit; },
-        set: function (limit) {
+    Cursor.prototype.limit = function (limit) {
+        if (typeof limit === 'number') {
             this._limit = limit;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Cursor.prototype, "skip", {
-        get: function () { return this._skip; },
-        set: function (skip) {
+            return this;
+        }
+        return this._limit;
+    };
+    Cursor.prototype.skip = function (skip) {
+        if (typeof skip === 'number') {
             this._skip = skip;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Cursor.prototype, "previousSkip", {
-        get: function () {
-            var skip = this._skip - this.limit;
-            if (skip < 1) {
-                return 0;
-            }
-            return skip;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Cursor.prototype, "nextSkip", {
-        get: function () {
-            return this._skip + this.limit;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Cursor.prototype.previousCursor = function () {
-        var limit = this.limit;
-        var skip = this.previousSkip;
+            return this;
+        }
+        return this._skip;
+    };
+    Cursor.prototype.previous = function () {
+        var limit = this.limit();
+        var skip = this.skip() - this.limit();
+        if (skip < 1) {
+            skip = 0;
+        }
         return new Cursor({ limit: limit, skip: skip });
     };
-    Cursor.prototype.nextCursor = function () {
-        var limit = this.limit;
-        var skip = this.nextSkip;
+    Cursor.prototype.next = function () {
+        var limit = this.limit();
+        var skip = this.skip() + this.limit();
         return new Cursor({ limit: limit, skip: skip });
     };
     Cursor.prototype.opaque = function () {
         return Buffer.from(this.toString()).toString('base64');
     };
     Cursor.prototype.toString = function () {
-        return this._limit + ":" + this._skip;
+        return this.limit() + ":" + this.skip();
     };
     return Cursor;
 }());
