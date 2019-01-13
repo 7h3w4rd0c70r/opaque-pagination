@@ -2,11 +2,12 @@
 import { CursorConfig } from '../index.d'
 
 export class Cursor {
-    public static parse(cursor: string|CursorConfig): Cursor {
-        let limit: number = 0
-        let skip: number = 0
-
+    public static parse(cursor: string|CursorConfig): Cursor {        
         if (typeof cursor === 'string') {
+            let limit: number = 0
+            let skip: number = 0
+            let sort: { [key: string]: 'asc'|'desc' } = {}
+
             const cursorParts = Buffer.from(cursor, 'base64').toString('ascii').split(':')
             if (!isNaN(cursorParts[0] as any)) {
                 limit = Number(cursorParts[0])
@@ -14,17 +15,30 @@ export class Cursor {
             if (!isNaN(cursorParts[1] as any)) {
                 skip = Number(cursorParts[1])
             }
-        } else if (cursor) {
-            limit = cursor.limit
-            skip = cursor.skip
+            if (typeof cursorParts[2] === 'string' && cursorParts[2].length > 0) {
+                try {
+                    sort = JSON.parse(Buffer.from(cursorParts[2], 'hex').toString('utf8'))
+                } catch (err) {
+                    sort = {}
+                }
+            }
+
+            return new Cursor({ limit, skip, sort })
         }
 
-        return new Cursor({ limit, skip })
+        return new Cursor(cursor)
     }
 
     constructor(config: CursorConfig) {
-        this._limit = config.limit
-        this._skip = config.skip
+        if (typeof config.limit === 'number') {
+            this._limit = config.limit
+        }
+        if (typeof config.skip) {
+            this._skip = config.skip
+        }
+        if (config.sort !== null && typeof config.sort === 'object') {
+            this._sort = config.sort
+        }
     }
 
     private _limit: number = 1
@@ -49,7 +63,7 @@ export class Cursor {
         return this._skip
     }
 
-    private _sort: { [key: string]: 'asc'|'desc' }
+    private _sort: { [key: string]: 'asc'|'desc' } = {}
     public sort(): { [key: string]: 'asc'|'desc' }
     public sort(sort: { [key: string]: 'asc'|'desc' }): Cursor
     public sort(sort?: { [key: string]: 'asc'|'desc' }): Cursor|{ [key: string]: 'asc'|'desc' } {
@@ -90,6 +104,6 @@ export class Cursor {
     }
 
     public toString(): string {
-        return `${this.limit()}:${this.skip()}`
+        return `${this.limit()}:${this.skip()}:${Buffer.from(JSON.stringify(this.sort()), 'utf8').toString('hex')}`
     }
 }

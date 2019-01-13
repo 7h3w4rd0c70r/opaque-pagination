@@ -4,13 +4,22 @@ var Cursor = (function () {
     function Cursor(config) {
         this._limit = 1;
         this._skip = 0;
-        this._limit = config.limit;
-        this._skip = config.skip;
+        this._sort = {};
+        if (typeof config.limit === 'number') {
+            this._limit = config.limit;
+        }
+        if (typeof config.skip) {
+            this._skip = config.skip;
+        }
+        if (config.sort !== null && typeof config.sort === 'object') {
+            this._sort = config.sort;
+        }
     }
     Cursor.parse = function (cursor) {
-        var limit = 0;
-        var skip = 0;
         if (typeof cursor === 'string') {
+            var limit = 0;
+            var skip = 0;
+            var sort = {};
             var cursorParts = Buffer.from(cursor, 'base64').toString('ascii').split(':');
             if (!isNaN(cursorParts[0])) {
                 limit = Number(cursorParts[0]);
@@ -18,12 +27,17 @@ var Cursor = (function () {
             if (!isNaN(cursorParts[1])) {
                 skip = Number(cursorParts[1]);
             }
+            if (typeof cursorParts[2] === 'string' && cursorParts[2].length > 0) {
+                try {
+                    sort = JSON.parse(Buffer.from(cursorParts[2], 'hex').toString('utf8'));
+                }
+                catch (err) {
+                    sort = {};
+                }
+            }
+            return new Cursor({ limit: limit, skip: skip, sort: sort });
         }
-        else if (cursor) {
-            limit = cursor.limit;
-            skip = cursor.skip;
-        }
-        return new Cursor({ limit: limit, skip: skip });
+        return new Cursor(cursor);
     };
     Cursor.prototype.limit = function (limit) {
         if (typeof limit === 'number') {
@@ -71,7 +85,7 @@ var Cursor = (function () {
         return Buffer.from(this.toString()).toString('base64');
     };
     Cursor.prototype.toString = function () {
-        return this.limit() + ":" + this.skip();
+        return this.limit() + ":" + this.skip() + ":" + Buffer.from(JSON.stringify(this.sort()), 'utf8').toString('hex');
     };
     return Cursor;
 }());
