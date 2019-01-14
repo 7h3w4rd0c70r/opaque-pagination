@@ -85,18 +85,20 @@ export class Cursor {
     }
 
     public previous(): Cursor {
+        const sort = this.sort()
         const limit = this.limit()
-        let skip = this.skip() - this.limit()
+        let skip = this.skip() - limit
         if (skip < 1) {
             skip = 0
         }
-        return new Cursor({ limit, skip })
+        return new Cursor({ limit, skip, sort })
     }
 
     public next(): Cursor {
+        const sort = this.sort()
         const limit = this.limit()
-        const skip = this.skip() + this.limit()
-        return new Cursor({ limit, skip })
+        const skip = this.skip() + limit
+        return new Cursor({ limit, skip, sort })
     }
 
     public opaque(): string {

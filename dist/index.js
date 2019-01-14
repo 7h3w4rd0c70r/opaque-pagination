@@ -69,17 +69,19 @@ var Cursor = (function () {
         return this;
     };
     Cursor.prototype.previous = function () {
+        var sort = this.sort();
         var limit = this.limit();
-        var skip = this.skip() - this.limit();
+        var skip = this.skip() - limit;
         if (skip < 1) {
             skip = 0;
         }
-        return new Cursor({ limit: limit, skip: skip });
+        return new Cursor({ limit: limit, skip: skip, sort: sort });
     };
     Cursor.prototype.next = function () {
+        var sort = this.sort();
         var limit = this.limit();
-        var skip = this.skip() + this.limit();
-        return new Cursor({ limit: limit, skip: skip });
+        var skip = this.skip() + limit;
+        return new Cursor({ limit: limit, skip: skip, sort: sort });
     };
     Cursor.prototype.opaque = function () {
         return Buffer.from(this.toString()).toString('base64');
